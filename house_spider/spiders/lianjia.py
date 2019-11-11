@@ -96,7 +96,8 @@ class LianjiaSpider(scrapy.Spider):
             page_data = sel.css(".house-lst-page-box::attr(page-data)").extract_first()
             page_data = json.loads(page_data)
             if page_data['curPage'] < page_data['totalPage']:
-                url = response.meta["ref"] + 'pg' + str(page_data['curPage'] + 1)
+                village = response.meta["ref"].replace(self.base_url + '/ershoufang/', '')
+                url = self.base_url + '/ershoufang/' + 'pg' + str(page_data['curPage'] + 1) + village
                 yield scrapy.Request(url=url, callback=self.parse_house_list, meta=response.meta)
 
     def parse_house_detail(self, response):
