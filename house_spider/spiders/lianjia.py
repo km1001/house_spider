@@ -20,13 +20,8 @@ class LianjiaSpider(scrapy.Spider):
         request_url = 'https://cq.lianjia.com/xiaoqu/'
         yield scrapy.Request(url=request_url, callback=self.parse_district_links)
 
-    # def start_requests(self):
-    #     for x in range(0, 150, 1):
-    #         request_url = 'https://cq.lianjia.com/ershoufang/bp' + str(x) + 'ep' + str(x + 1) + '/'
-    #         #print(request_url)
-    #         yield scrapy.Request(url=request_url, callback=self.parse_house_list)
-
     def parse_district_links(self, response):
+        """提取地区链接"""
         sel = Selector(response)
         links = sel.css("div[data-role='ershoufang'] div:first-child a::attr(href)").extract()
         for link in links:
@@ -34,6 +29,7 @@ class LianjiaSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse_bizcircle_links)
 
     def parse_bizcircle_links(self, response):
+        """提取商圈链接"""
         sel = Selector(response)
         links = sel.css("div[data-role='ershoufang'] div:nth-child(2) a::attr(href)").extract()
         for link in links:
@@ -41,6 +37,7 @@ class LianjiaSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse_village_list, meta={"ref": url})
 
     def parse_village_list(self, response):
+        """提取小区链接"""
         sel = Selector(response)
         links = sel.css(".listContent .xiaoquListItem .img::attr(href)").extract()
         for link in links:
@@ -54,6 +51,7 @@ class LianjiaSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse_village_list, meta=response.meta)
 
     def parse_village_detail(self, response):
+        """提取小区详情"""
         village_url = response.url
         sel = Selector(response)
         zone = sel.css('.xiaoquDetailbreadCrumbs .l-txt a::text').extract()
@@ -91,6 +89,7 @@ class LianjiaSpider(scrapy.Spider):
         yield scrapy.Request(url=url, callback=self.parse_house_list, meta={"ref": url})
 
     def parse_house_list(self, response):
+        """提取房源链接"""
         sel = Selector(response)
         # 链家有时小区查询不到数据
         total = sel.css('.resultDes .total span::text').extract_first()
@@ -100,14 +99,7 @@ class LianjiaSpider(scrapy.Spider):
             links = sel.css(".sellListContent li .info .title a::attr(href)").extract()
             for link in links:
                 yield scrapy.Request(url=link, callback=self.parse_house_detail)
-
-            # page
-            # page_data = sel.css(".house-lst-page-box::attr(page-data)").extract_first()
-            # page_data = json.loads(page_data)
-            # if page_data['curPage'] < page_data['totalPage']:
-            #     village = response.meta["ref"].replace(self.base_url + '/ershoufang/', '')
-            #     url = self.base_url + '/ershoufang/' + 'pg' + str(page_data['curPage'] + 1) + village
-            #     yield scrapy.Request(url=url, callback=self.parse_house_list, meta=response.meta)
+            # 链接分页
             page_data = sel.css(".house-lst-page-box::attr(page-data)").extract_first()
             page_data = json.loads(page_data)
             if page_data['curPage'] == 1 and page_data['totalPage'] > 1:
@@ -117,7 +109,7 @@ class LianjiaSpider(scrapy.Spider):
                     yield scrapy.Request(url=url, callback=self.parse_house_list)
 
     def parse_house_detail(self, response):
-        print(response.url)
+        """提取房源信息"""
         sel = Selector(response)
 
         item = LianjiaHouseItem()
