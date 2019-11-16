@@ -20,6 +20,12 @@ class LianjiaSpider(scrapy.Spider):
         request_url = 'https://cq.lianjia.com/xiaoqu/'
         yield scrapy.Request(url=request_url, callback=self.parse_district_links)
 
+    # def start_requests(self):
+    #     for x in range(0, 150, 1):
+    #         request_url = 'https://cq.lianjia.com/ershoufang/bp' + str(x) + 'ep' + str(x + 1) + '/'
+    #         #print(request_url)
+    #         yield scrapy.Request(url=request_url, callback=self.parse_house_list)
+
     def parse_district_links(self, response):
         sel = Selector(response)
         links = sel.css("div[data-role='ershoufang'] div:first-child a::attr(href)").extract()
@@ -76,6 +82,8 @@ class LianjiaSpider(scrapy.Spider):
         item['developers'] = sel.css('.xiaoquInfo .xiaoquInfoItem:nth-child(5) .xiaoquInfoContent::text').extract_first()
         item['buildings'] = sel.css('.xiaoquInfo .xiaoquInfoItem:nth-child(6) .xiaoquInfoContent::text').extract_first()
         item['total_house'] = sel.css('.xiaoquInfo .xiaoquInfoItem:nth-child(7) .xiaoquInfoContent::text').extract_first()
+
+        print(item['name'])
         yield item
 
         # 小区房源 https://cq.lianjia.com/ershoufang/c3620038190566370/
@@ -84,23 +92,32 @@ class LianjiaSpider(scrapy.Spider):
 
     def parse_house_list(self, response):
         sel = Selector(response)
+        # 链家有时小区查询不到数据
         total = sel.css('.resultDes .total span::text').extract_first()
         total = int(total)
         if total > 0:
             # 提取房源链接
-            links = sel.css(".sellListContent .title .LOGCLICKDATA::attr(href)").extract()
+            links = sel.css(".sellListContent li .info .title a::attr(href)").extract()
             for link in links:
                 yield scrapy.Request(url=link, callback=self.parse_house_detail)
 
             # page
+            # page_data = sel.css(".house-lst-page-box::attr(page-data)").extract_first()
+            # page_data = json.loads(page_data)
+            # if page_data['curPage'] < page_data['totalPage']:
+            #     village = response.meta["ref"].replace(self.base_url + '/ershoufang/', '')
+            #     url = self.base_url + '/ershoufang/' + 'pg' + str(page_data['curPage'] + 1) + village
+            #     yield scrapy.Request(url=url, callback=self.parse_house_list, meta=response.meta)
             page_data = sel.css(".house-lst-page-box::attr(page-data)").extract_first()
             page_data = json.loads(page_data)
-            if page_data['curPage'] < page_data['totalPage']:
-                village = response.meta["ref"].replace(self.base_url + '/ershoufang/', '')
-                url = self.base_url + '/ershoufang/' + 'pg' + str(page_data['curPage'] + 1) + village
-                yield scrapy.Request(url=url, callback=self.parse_house_list, meta=response.meta)
+            if page_data['curPage'] == 1 and page_data['totalPage'] > 1:
+                price = response.url.replace(self.base_url + '/ershoufang/', '')
+                for x in range(2, page_data['totalPage'] + 1, 1):
+                    url = self.base_url + '/ershoufang/' + 'pg' + str(x) + price
+                    yield scrapy.Request(url=url, callback=self.parse_house_list)
 
     def parse_house_detail(self, response):
+        print(response.url)
         sel = Selector(response)
 
         item = LianjiaHouseItem()
