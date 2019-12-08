@@ -7,7 +7,6 @@
 
 import scrapy
 
-
 class HouseSpiderItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
@@ -30,6 +29,7 @@ class LianjiaVillageItem(scrapy.Item):
     developers = scrapy.Field()
     buildings = scrapy.Field()
     total_house = scrapy.Field()
+    采集时间 = scrapy.Field()
 
 class LianjiaHouseItem(scrapy.Item):
     collection = 'lianjia_House'
@@ -58,3 +58,7 @@ class LianjiaHouseItem(scrapy.Item):
     产权所属 = scrapy.Field()
     抵押信息 = scrapy.Field()
     房本备件 = scrapy.Field()
+    成交价 = scrapy.Field()
+    状态 = scrapy.Field()
+    采集时间 = scrapy.Field()
+    成交时间 = scrapy.Field()
