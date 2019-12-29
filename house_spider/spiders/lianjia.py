@@ -17,6 +17,7 @@ class LianjiaSpider(scrapy.Spider):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.count = 0
         self.base_url = 'https://cq.lianjia.com'
         self.client = pymongo.MongoClient(host='127.0.0.1', port=27017)
 
@@ -160,7 +161,8 @@ class LianjiaSpider(scrapy.Spider):
         item['房本备件'] = sel.css('#introduction .transaction .content ul li:nth-child(8) span:nth-child(2)::text').extract_first()
         item['状态'] = '在售'
         item['采集时间'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-
+        self.count += 1
+        print("number:" + str(self.count) + ":" + item['小区'] + ":" + response.url)
         yield item
 
     def parse_chouse_list(self, response):
