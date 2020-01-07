@@ -103,6 +103,7 @@ class HouseSpiderDownloaderMiddleware(object):
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
 
+
 class UserAgentMiddleWare(object):
     user_agent_list = [
         "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; AcooBrowser; .NET CLR 1.1.4322; .NET CLR 2.0.50727)",
@@ -131,4 +132,25 @@ class UserAgentMiddleWare(object):
     ]
 
     def process_request(self, request, spider):
-        request.headers['USER_AGENT'] = random.choice(self.user_agent_list)
+        thisua = random.choice(self.user_agent_list)
+        print("当前使用User-Agent是：" + thisua)
+        request.headers.setdefault('User-Agent', thisua)
+        # request.headers['USER_AGENT'] = random.choice(self.user_agent_list)
+
+
+class ProxyMiddleware(object):
+    """
+    设置Proxy
+    """
+
+    def __init__(self, ip):
+        self.ip = ip
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(ip=crawler.settings.get('PROXIES'))
+
+    def process_request(self, request, spider):
+        ip = random.choice(self.ip)
+        print("当前使用IP是：" + ip)
+        request.meta['proxy'] = ip

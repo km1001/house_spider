@@ -25,6 +25,9 @@ class LianjiaSpider(scrapy.Spider):
         request_url = 'https://cq.lianjia.com/xiaoqu/'
         yield scrapy.Request(url=request_url, callback=self.parse_district_links)
 
+    def parse(self, response):
+        print(response.text)
+
     def parse_district_links(self, response):
         """提取地区链接"""
         sel = Selector(response)
