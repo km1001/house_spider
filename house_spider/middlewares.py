@@ -133,7 +133,7 @@ class UserAgentMiddleWare(object):
 
     def process_request(self, request, spider):
         thisua = random.choice(self.user_agent_list)
-        print("当前使用User-Agent是：" + thisua)
+        #print("当前使用User-Agent是：" + thisua)
         request.headers.setdefault('User-Agent', thisua)
         # request.headers['USER_AGENT'] = random.choice(self.user_agent_list)
 

@@ -53,7 +53,7 @@ ROBOTSTXT_OBEY = True
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'house_spider.middlewares.ProxyMiddleware': 100,
+    #'house_spider.middlewares.ProxyMiddleware': 100,
     'house_spider.middlewares.UserAgentMiddleWare': 543,
 }
 
@@ -93,5 +93,14 @@ ITEM_PIPELINES = {
 #CONCURRENT_REQUESTS = 32
 MONGO_HOST = "127.0.0.1"  # 主机IP
 MONGO_PORT = 27017  # 端口号
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = 6379
 
+HTTPERROR_ALLOWED_CODES = [403]
 PROXIES = ['222.189.73.107:3000','122.245.135.167:3000']
+
+DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+SCHEDULER_PERSIST = False 			# False ：爬虫时不清空redis
+SCHEDULER_FLUSH_ON_START = False  	# True：启动爬虫时清空redis
+SCHEDULER_QUEUE_CLASS = "scrapy_redis.queue.SpiderQueue"

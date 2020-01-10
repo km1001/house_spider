@@ -8,12 +8,13 @@ import json
 import re
 import pymongo
 from house_spider.items import LianjiaVillageItem, LianjiaHouseItem
+from scrapy_redis.spiders import RedisCrawlSpider
 
-
-class LianjiaSpider(scrapy.Spider):
+class LianjiaSpider(RedisCrawlSpider):
     name = 'lianjia'
     allowed_domains = ['cq.lianjia.com']
-    start_urls = ['cq.lianjia.com']
+    # start_urls = ['cq.lianjia.com']
+    redis_key = 'lianjia:start_urls'
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -21,12 +22,13 @@ class LianjiaSpider(scrapy.Spider):
         self.base_url = 'https://cq.lianjia.com'
         self.client = pymongo.MongoClient(host='127.0.0.1', port=27017)
 
-    def start_requests(self):
-        request_url = 'https://cq.lianjia.com/xiaoqu/'
-        yield scrapy.Request(url=request_url, callback=self.parse_district_links)
+    # def start_requests(self):
+    #     request_url = 'https://cq.lianjia.com/xiaoqu/'
+    #     yield scrapy.Request(url=request_url, callback=self.parse_district_links)
 
     def parse(self, response):
-        print(response.text)
+        request_url = 'https://cq.lianjia.com/xiaoqu/'
+        yield scrapy.Request(url=request_url, callback=self.parse_district_links)
 
     def parse_district_links(self, response):
         """提取地区链接"""
@@ -121,6 +123,7 @@ class LianjiaSpider(scrapy.Spider):
         if total > 0:
             # 提取房源链接
             links = sel.css(".sellListContent li .info .title a::attr(href)").extract()
+
             for link in links:
                 yield scrapy.Request(url=link, callback=self.parse_house_detail)
             # 链接分页
@@ -162,6 +165,7 @@ class LianjiaSpider(scrapy.Spider):
         item['产权所属'] = sel.css('#introduction .transaction .content ul li:nth-child(6) span:nth-child(2)::text').extract_first()
         item['抵押信息'] = sel.css('#introduction .transaction .content ul li:nth-child(7) span:nth-child(2)::attr(title)').extract_first()
         item['房本备件'] = sel.css('#introduction .transaction .content ul li:nth-child(8) span:nth-child(2)::text').extract_first()
+        item['关注人数'] = sel.css('#favCount::text').extract_first()
         item['状态'] = '在售'
         item['采集时间'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         self.count += 1

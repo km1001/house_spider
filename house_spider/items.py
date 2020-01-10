@@ -62,3 +62,4 @@ class LianjiaHouseItem(scrapy.Item):
     状态 = scrapy.Field()
     采集时间 = scrapy.Field()
     成交时间 = scrapy.Field()
+    关注人数 = scrapy.Field()
